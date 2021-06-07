@@ -19,12 +19,24 @@ public class TrafficLightCtrl {
 
     private boolean doRun = true;
 
-    public TrafficLightCtrl() {
+    private static TrafficLightCtrl instance = null;
+
+    public static TrafficLightCtrl getInstance(){
+        if(instance == null){
+            instance = new TrafficLightCtrl();
+        }
+        return instance;
+    }
+
+    private TrafficLightCtrl() {
         super();
         initStates();
         gui = new TrafficLightGui(this);
         gui.setVisible(true);
         //TODO useful to update the current state
+        redState.registerObserver(gui);
+        greenState.registerObserver(gui);
+        yellowState.registerObserver(gui);
     }
 
     private void initStates() {
@@ -33,6 +45,7 @@ public class TrafficLightCtrl {
             public State getNextState() {
                 previousState = currentState;
                 //TODO useful to update the current state and the old one
+                notifyObservers(getColor());
                 return yellowState;
             }
             @Override
@@ -46,6 +59,7 @@ public class TrafficLightCtrl {
             public State getNextState() {
                 previousState = currentState;
                 //TODO useful to update the current state and the old one
+                notifyObservers(getColor());
                 return yellowState;
             }
             @Override
@@ -60,10 +74,12 @@ public class TrafficLightCtrl {
                 if (previousState.equals(greenState)) {
                     previousState = currentState;
                     //TODO useful to update the current state and the old one
+                    notifyObservers(getColor());
                     return redState;
                 }else {
                     previousState = currentState;
                     //TODO useful to update the current state and the old one
+                    notifyObservers(getColor());
                     return greenState;
                 }
             }
@@ -108,5 +124,14 @@ public class TrafficLightCtrl {
 
     public void stop() {
         doRun = false;
+    }
+
+    public State getState(){
+        return currentState;
+    }
+
+    public void resetState(){
+        currentState = greenState;
+        currentState.notifyObservers(getState().getColor());
     }
 }
